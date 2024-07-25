@@ -3,7 +3,6 @@ pub mod v0;
 #[cfg(feature = "v1")]
 pub mod v1;
 
-use blockifier::bouncer::BouncerConfig;
 #[cfg(feature = "v0")]
 pub use v0::INITIAL_SEQUENCER_STATE;
 
@@ -127,17 +126,8 @@ impl KakarotSequencer {
             serde_json::from_str(include_str!("./resources/versioned_constants.json"))
                 .expect("failed to parse versioned constants");
 
-        let bouncer_config = BouncerConfig::max();
-
-        let concurrency_mode = Default::default();
-
-        let block_context = BlockContext::new(
-            block_info,
-            chain_info,
-            versioned_constants,
-            bouncer_config,
-            concurrency_mode,
-        );
+        let block_context =
+            BlockContext::new_unchecked(&block_info, &chain_info, &versioned_constants);
 
         let sequencer = Sequencer::new(block_context, initial_state, coinbase_address);
         Self {

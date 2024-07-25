@@ -11,19 +11,21 @@ where
     for<'any> &'any mut S: BlockifierState + BlockifierStateReader,
 {
     fn commit(cached_state: &mut CachedState<&mut S>) -> StateResult<()> {
-        let diff = cached_state.to_state_diff()?;
-        for (address, class_hash) in diff.class_hashes {
+        let diff = cached_state.to_state_diff();
+        for (address, class_hash) in diff.address_to_class_hash {
             cached_state.state.set_class_hash_at(address, class_hash)?;
         }
-        for (address, _) in diff.nonces {
+        for (address, _) in diff.address_to_nonce {
             cached_state.state.increment_nonce(address)?;
         }
-        for ((address, storage_key), value) in &diff.storage {
-            cached_state
-                .state
-                .set_storage_at(*address, *storage_key, *value)?;
+        for (address, storage) in &diff.storage_updates {
+            for (storage_key, value) in storage {
+                cached_state
+                    .state
+                    .set_storage_at(*address, *storage_key, *value)?;
+            }
         }
-        for (class_hash, compiled_class_hash) in diff.compiled_class_hashes {
+        for (class_hash, compiled_class_hash) in diff.class_hash_to_compiled_class_hash {
             cached_state
                 .state
                 .set_compiled_class_hash(class_hash, compiled_class_hash)?;

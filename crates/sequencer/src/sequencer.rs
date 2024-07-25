@@ -89,7 +89,13 @@ where
         let mut cached_state = CachedState::new(&mut self.state);
         let charge_fee = false;
         let validate = true;
-        let res = transaction.execute(&mut cached_state, &self.block_context, charge_fee, validate);
+        let res = transaction.execute(
+            &mut cached_state,
+            &self.block_context,
+            charge_fee,
+            validate,
+            None,
+        );
 
         let execution_information = match res {
             Err(err) => {
@@ -276,17 +282,7 @@ mod tests {
             serde_json::from_str(include_str!("./resources/versioned_constants.json"))
                 .expect("failed to parse versioned constants");
 
-        let bouncer_config = BouncerConfig::max();
-
-        let concurrency_mode = Default::default();
-
-        BlockContext::new(
-            block_info,
-            chain_info,
-            versioned_constants,
-            bouncer_config,
-            concurrency_mode,
-        )
+        BlockContext::new_unchecked(&block_info, &chain_info, &versioned_constants)
     }
 
     fn test_transaction() -> Transaction {

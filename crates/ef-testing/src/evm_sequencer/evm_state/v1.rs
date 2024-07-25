@@ -294,12 +294,15 @@ impl Evm for KakarotSequencer {
         transaction: TransactionSigned,
     ) -> TransactionExecutionResult<TransactionExecutionInfo> {
         let evm_address = transaction.recover_signer().ok_or_else(|| {
-            TransactionExecutionError::ValidateTransactionError(
-                EntryPointExecutionError::InvalidExecutionInput {
+            TransactionExecutionError::ValidateTransactionError {
+                error: EntryPointExecutionError::InvalidExecutionInput {
                     input_descriptor: String::from("Signed transaction"),
                     info: "Missing signer in signed transaction".to_string(),
                 },
-            )
+                class_hash: Default::default(),
+                storage_address: Default::default(),
+                selector: Default::default(),
+            }
         })?;
         let starknet_address = self.compute_starknet_address(&evm_address)?;
 
@@ -310,12 +313,15 @@ impl Evm for KakarotSequencer {
                     (*starknet_address.0.key()).into(),
                 )
                 .map_err(|err| {
-                    TransactionExecutionError::ValidateTransactionError(
-                        EntryPointExecutionError::InvalidExecutionInput {
+                    TransactionExecutionError::ValidateTransactionError {
+                        error: EntryPointExecutionError::InvalidExecutionInput {
                             input_descriptor: String::from("Failed to convert transaction"),
                             info: err.to_string(),
                         },
-                    )
+                        class_hash: Default::default(),
+                        storage_address: Default::default(),
+                        selector: Default::default(),
+                    }
                 })?,
             ));
 
